@@ -1,0 +1,30 @@
+{
+  "name": "strict-throttle",
+  "version": "1.0.0",
+  "description": "Strictly throttle function calls",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test mocha test/"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "keywords": [
+    "throttle",
+    "limiter",
+    "delay",
+    "rate limit",
+    "function",
+    "async",
+    "promise",
+    "API"
+  ],
+  "author": "Aaron Schinkowitch",
+  "license": "MIT",
+  "devDependencies": {
+    "delay": "^5.0.0",
+    "mocha": "^8.3.0",
+    "should": "^13.2.3"
+  }
+}
