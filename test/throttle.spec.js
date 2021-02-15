@@ -12,7 +12,7 @@ describe('Strict throttle', () => {
         const limit = 1;
         const interval = 50;
         const throttle = Throttle({limit: limit, interval: interval});
-        const fn = () => Date.now();
+        const fn = Date.now;
         const promises = [];
         const start = Date.now();
 
@@ -55,7 +55,7 @@ describe('Strict throttle', () => {
         const limit = 100;
         const interval = 50;
         const throttle = Throttle({limit: limit, interval: interval});
-        const fn = () => Date.now();
+        const fn = Date.now;
 
         const promises = [];
         const start = Date.now();
@@ -79,7 +79,7 @@ describe('Strict throttle', () => {
         const interval = 50;
         const maxPause = 10;
         const throttle = Throttle({limit: limit, interval: interval});
-        const fn = () => Date.now();
+        const fn = Date.now;
 
         const promises = [];
 
@@ -293,13 +293,14 @@ describe('Strict throttle', () => {
     it('gets the number of waiting calls', async () => {
         const throttle = Throttle({limit: 1, interval: 100});
         const promises = [];
+        const fn = () => {};
 
         throttle.waitingCount().should.equal(0);
-        promises.push(throttle(Date.now));
+        promises.push(throttle(fn));
         throttle.waitingCount().should.equal(0);
-        promises.push(throttle(Date.now));
+        promises.push(throttle(fn));
         throttle.waitingCount().should.equal(1);
-        promises.push(throttle(Date.now));
+        promises.push(throttle(fn));
         throttle.waitingCount().should.equal(2);
 
         await Promise.all(promises);
@@ -310,10 +311,11 @@ describe('Strict throttle', () => {
     it('aborts pending calls', async () => {
         const throttle = Throttle({limit: 1, interval: 100});
         const promises = [];
+        const fn = () => {};
 
-        promises.push(throttle(Date.now));
-        promises.push(throttle(Date.now));
-        promises.push(throttle(Date.now));
+        promises.push(throttle(fn));
+        promises.push(throttle(fn));
+        promises.push(throttle(fn));
 
         throttle.waitingCount().should.equal(2);
 
