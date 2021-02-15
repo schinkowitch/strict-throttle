@@ -2,7 +2,10 @@
 
 const Throttle = require('../index'),
     should = require('should'),
-    delay = require('delay');
+    delay = require('delay'),
+    allSettled = require('promise.allsettled');
+
+allSettled.shim();
 
 describe('Strict throttle', () => {
     it('throttles calls to a function', async () => {

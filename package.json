@@ -2,6 +2,7 @@
   "name": "strict-throttle",
   "version": "1.0.0",
   "description": "Strictly throttle function calls",
+  "repository": "schinkowitch/strict-throttle",
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test mocha test/"
@@ -25,6 +26,7 @@
   "devDependencies": {
     "delay": "^5.0.0",
     "mocha": "^8.3.0",
+    "promise.allsettled": "^1.0.4",
     "should": "^13.2.3"
   }
 }
