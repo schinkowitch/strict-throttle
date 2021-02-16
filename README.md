@@ -19,12 +19,16 @@ const delay = require('delay');
 async function example () {
     const start = Date.now();
     
-    throttle(() => Date.now() - start).then(console.log); // 0
+    function elapsedTime () {
+        return Date.now() - start;
+    }
+
+    throttle(elapsedTime).then(console.log); // 0
     await delay(950);
-    throttle(() => Date.now() - start).then(console.log); // 950
-    throttle(() => Date.now() - start).then(console.log); // 1000
-    throttle(() => Date.now() - start).then(console.log); // 1950
-    throttle(() => Date.now() - start).then(console.log); // 2000
+    throttle(elapsedTime).then(console.log); // 950
+    throttle(elapsedTime).then(console.log); // 1000
+    throttle(elapsedTime).then(console.log); // 1950
+    throttle(elapsedTime).then(console.log); // 2000
     
     throttle.waitingCount(); // 4
     
