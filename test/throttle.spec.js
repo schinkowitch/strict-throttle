@@ -95,7 +95,7 @@ describe('Strict throttle', () => {
         await Promise.all(promises);
 
         const elapsed = Date.now() - start;
-        const expected = count * interval;
+        const expected = (count - 1) * interval;
 
         elapsed.should.be.within(expected, expected + 100);
     });
