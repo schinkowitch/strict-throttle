@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 1.0.1 - 2021-02-16
+### Added
+### Changed
+- Added "engines" to package.json to explicitly state supported node.js versions (10.7.0 or higher)
+- Improve timing accuracy by using nanosecond calculations and scheduling executions using [nanotimer](https://github.com/Krb686/nanotimer)
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 ## 1.0.0 - 2021-02-15 - Initial release
 ### Added
 - Strict Throttle that delays (rate limits) the execution of function calls, ensuring the function calls are executed

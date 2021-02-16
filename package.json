@@ -1,9 +1,12 @@
 {
   "name": "strict-throttle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Strictly throttle function calls",
   "repository": "schinkowitch/strict-throttle",
   "main": "index.js",
+  "engines": {
+    "node": ">=10.7.0"
+  },
   "scripts": {
     "test": "NODE_ENV=test mocha test/"
   },
@@ -28,5 +31,8 @@
     "mocha": "^8.3.0",
     "promise.allsettled": "^1.0.4",
     "should": "^13.2.3"
+  },
+  "dependencies": {
+    "nanotimer": "^0.3.15"
   }
 }

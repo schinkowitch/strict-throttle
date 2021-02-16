@@ -1,9 +1,13 @@
 'use strict';
 
+const NanoTimer = require('nanotimer');
+const timer = new NanoTimer();
+
 module.exports = function StrictThrottle ({limit, interval}) {
     checkOptions(limit, interval);
 
-    const recentTicks = new Array(limit).fill(0);
+    const intervalNanos = BigInt(interval * 1000000);
+    const recentTicks = new Array(limit).fill(0n);
     let oldestIndex = limit - 1;
     const queue = [];
     let timerId = null;
@@ -21,7 +25,7 @@ module.exports = function StrictThrottle ({limit, interval}) {
             queue.push({fn, resolve, reject});
 
             if (queue.length === 1) {
-                scheduleNext(Date.now());
+                scheduleNext(process.hrtime.bigint());
             }
         });
     }
@@ -36,12 +40,12 @@ module.exports = function StrictThrottle ({limit, interval}) {
             return false;
         }
 
-        return Date.now() - recentTicks[oldestIndex] >= interval;
+        return process.hrtime.bigint() - recentTicks[oldestIndex] >= intervalNanos;
     }
 
     function executeImmediately (fn) {
         return new Promise((resolve, reject) => {
-            recordExecution(Date.now());
+            recordExecution(process.hrtime.bigint());
 
             try {
                 resolve(fn());
@@ -53,7 +57,7 @@ module.exports = function StrictThrottle ({limit, interval}) {
 
     function executeFirst () {
         const firstEntry = queue.shift();
-        const now = Date.now();
+        const now = process.hrtime.bigint();
 
         recordExecution(now);
 
@@ -79,10 +83,10 @@ module.exports = function StrictThrottle ({limit, interval}) {
     function scheduleNext (now) {
         const elapsed = now - recentTicks[oldestIndex];
 
-        if (elapsed >= interval) {
-            process.nextTick(executeFirst);
+        if (elapsed >= intervalNanos) {
+            setImmediate(executeFirst);
         } else {
-            timerId = setTimeout(executeFirst, interval - elapsed);
+            timerId = timer.setTimeout(executeFirst, '', (intervalNanos - elapsed) + 'n');
         }
     }
 
@@ -95,7 +99,7 @@ module.exports = function StrictThrottle ({limit, interval}) {
             return;
         }
 
-        clearTimeout(timerId); // Remove scheduled execution of next queue member
+        timer.clearTimeout(timerId); // Remove scheduled execution of next queue member
         timerId = null;
 
         for (const entry of queue) {

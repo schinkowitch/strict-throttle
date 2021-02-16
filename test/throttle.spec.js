@@ -10,11 +10,12 @@ allSettled.shim();
 describe('Strict throttle', () => {
     it('throttles calls to a function', async () => {
         const limit = 1;
-        const interval = 50;
+        const interval = 20;
+        const intervalNanos = interval * 1000000;
         const throttle = Throttle({limit: limit, interval: interval});
-        const fn = Date.now;
+        const fn = process.hrtime.bigint;
         const promises = [];
-        const start = Date.now();
+        const start = fn();
 
         promises.push(throttle(fn));
         promises.push(throttle(fn));
@@ -26,14 +27,15 @@ describe('Strict throttle', () => {
         should.exist(results[0]);
         should.exist(results[1]);
 
-        (results[0] - start).should.be.within(0, 5);
-        (results[1] - start).should.be.within(interval, 59);
-        (results[1] - results[0]).should.be.within(interval, 59);
+        const errorNanos = 900000; // 0.9ms
+
+        Number(results[0] - start).should.be.within(0, errorNanos);
+        Number(results[1] - results[0]).should.be.within(intervalNanos, intervalNanos + errorNanos);
     });
 
     it('returns promise', async () => {
         const limit = 1;
-        const interval = 50;
+        const interval = 10;
         const throttle = Throttle({limit: limit, interval: interval});
         const fn = () => Promise.resolve(Date.now());
         const promises = [];
@@ -53,7 +55,7 @@ describe('Strict throttle', () => {
 
     it('handles large limit', async () => {
         const limit = 100;
-        const interval = 50;
+        const interval = 20;
         const throttle = Throttle({limit: limit, interval: interval});
         const fn = Date.now;
 
@@ -72,6 +74,30 @@ describe('Strict throttle', () => {
 
             elapsed.should.be.within(expected, expected + 9);
         });
+    });
+
+    it('is performant with large queue', async function () {
+        this.timeout(20000);
+
+        const limit = 1;
+        const interval = 9;
+        const count = 1000;
+        const throttle = Throttle({limit: limit, interval: interval});
+        const fn = () => {};
+
+        const promises = [];
+        const start = Date.now();
+
+        for (let i = 0; i < count; i++) {
+            promises.push(throttle(fn));
+        }
+
+        await Promise.all(promises);
+
+        const elapsed = Date.now() - start;
+        const expected = count * interval;
+
+        elapsed.should.be.within(expected, expected + 100);
     });
 
     it('always respects the interval with pauses', async () => {
@@ -102,7 +128,7 @@ describe('Strict throttle', () => {
 
     it('rejects if the function throws an Error', async () => {
         const limit = 1;
-        const interval = 50;
+        const interval = 10;
         const throttle = Throttle({limit: limit, interval: interval});
 
         const firstPromise = throttle(() => { throw new Error('first thing went wrong'); });
@@ -291,7 +317,7 @@ describe('Strict throttle', () => {
     });
 
     it('gets the number of waiting calls', async () => {
-        const throttle = Throttle({limit: 1, interval: 100});
+        const throttle = Throttle({limit: 1, interval: 10});
         const promises = [];
         const fn = () => {};
 
