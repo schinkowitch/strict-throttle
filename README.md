@@ -30,7 +30,7 @@ async function example () {
     throttle(elapsedTime).then(console.log); // 1950
     throttle(elapsedTime).then(console.log); // 2000
     
-    throttle.waitingCount(); // 4
+    throttle.waitingCount(); // 3
     
     //throttle.abort(); to reject waiting calls
 }
