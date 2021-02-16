@@ -3,7 +3,7 @@
 module.exports = function StrictThrottle ({limit, interval}) {
     checkOptions(limit, interval);
 
-    const recentTicks = initializeTicks(limit);
+    const recentTicks = new Array(limit).fill(0);
     let oldestIndex = limit - 1;
     const queue = [];
     let timerId = null;
@@ -113,14 +113,4 @@ function checkOptions (limit, interval) {
     if (!(Number.isInteger(interval) && interval > 0)) {
         throw new Error('Expected `interval` to be a positive integer');
     }
-}
-
-function initializeTicks (limit) {
-    const ticks = [];
-
-    for (let i = 0; i < limit; i++) {
-        ticks.push(0);
-    }
-
-    return ticks;
 }
