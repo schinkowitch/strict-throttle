@@ -8,6 +8,20 @@ const Throttle = require('../index'),
 allSettled.shim();
 
 describe('Strict throttle', () => {
+    it('warm up', async () => {
+        const limit = 1;
+        const interval = 10;
+        const throttle = Throttle({limit: limit, interval: interval});
+        const fn = process.hrtime.bigint;
+        const promises = [];
+
+        promises.push(throttle(fn));
+        promises.push(throttle(fn));
+        promises.push(throttle(fn));
+
+        await Promise.all(promises);
+    });
+
     it('throttles calls to a function', async () => {
         const limit = 1;
         const interval = 20;
