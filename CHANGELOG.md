@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 2.0.2 - 2022-02-01
+### Changed
+- Drop nodejs v10 support
+
 ## 1.0.1 - 2021-02-16
 ### Changed
 - Added "engines" to package.json to explicitly state supported node.js versions (10.7.0 or higher)
