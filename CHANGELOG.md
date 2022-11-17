@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+##  2.0.1 - 2022-11-17
+### Security
+- Update dependencies fixing minimatch security vulnerability (development dependency only)
+
 ## 2.0.0 - 2022-02-01
 ### Changed
 - Drop nodejs v10 support
