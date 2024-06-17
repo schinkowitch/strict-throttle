@@ -2,7 +2,10 @@
   "name": "strict-throttle",
   "version": "3.0.0",
   "description": "Strictly throttle function calls",
-  "repository": "schinkowitch/strict-throttle",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/schinkowitch/strict-throttle.git"
+  },
   "main": "index.js",
   "engines": {
     "node": ">=16"
