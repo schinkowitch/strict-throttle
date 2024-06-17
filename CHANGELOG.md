@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 3.0.0 - 2024-06-17
+### Changed
+- Minimum Node.js version to 16
+- Updated development dependencies
+
 ##  2.0.1 - 2022-11-17
 ### Security
 - Update dependencies fixing minimatch security vulnerability (development dependency only)

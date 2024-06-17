@@ -1,11 +1,11 @@
 {
   "name": "strict-throttle",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Strictly throttle function calls",
   "repository": "schinkowitch/strict-throttle",
   "main": "index.js",
   "engines": {
-    "node": ">=12"
+    "node": ">=16"
   },
   "scripts": {
     "test": "NODE_ENV=test mocha test/"
@@ -27,7 +27,6 @@
   "author": "Aaron Schinkowitch",
   "license": "MIT",
   "devDependencies": {
-    "delay": "^5.0.0",
     "mocha": "^10.1.0",
     "promise.allsettled": "^1.0.4",
     "should": "^13.2.3"

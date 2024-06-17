@@ -1,9 +1,9 @@
 'use strict';
 
-const Throttle = require('../index'),
-    should = require('should'),
-    delay = require('delay'),
-    allSettled = require('promise.allsettled');
+const Throttle = require('../index');
+const should = require('should');
+const {setTimeout} = require('node:timers/promises');
+const allSettled = require('promise.allsettled');
 
 allSettled.shim();
 
@@ -124,7 +124,7 @@ describe('Strict throttle', () => {
         const promises = [];
 
         for (let i = 0; i <= limit * 3; i++) {
-            await delay(Math.round(Math.random() * maxPause));
+            await setTimeout(Math.round(Math.random() * maxPause));
             promises.push(throttle(fn));
         }
 
