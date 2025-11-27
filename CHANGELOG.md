@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
+## 4.0.0 - 2025-11-27
+### Changed
+- Minium Node.js version to 20
+### Removed
+- Removed use of promise.allsettled shim from development dependencies since it is not necessary for Node.js >=20
+### Security
+- Updated development dependencies fixing js-yaml security vulnerability
+
 ## 3.0.0 - 2024-06-17
 ### Changed
 - Minimum Node.js version to 16

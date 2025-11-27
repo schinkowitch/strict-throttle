@@ -3,9 +3,6 @@
 const Throttle = require('../index');
 const should = require('should');
 const {setTimeout} = require('node:timers/promises');
-const allSettled = require('promise.allsettled');
-
-allSettled.shim();
 
 describe('Strict throttle', () => {
     it('warm up', async () => {
