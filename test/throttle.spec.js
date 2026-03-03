@@ -1,5 +1,6 @@
 'use strict';
 
+const {describe, it} = require('node:test');
 const Throttle = require('../index');
 const should = require('should');
 const {setTimeout} = require('node:timers/promises');
@@ -88,8 +89,6 @@ describe('Strict throttle', () => {
     });
 
     it('is performant with large queue', async function () {
-        this.timeout(20000);
-
         const limit = 1;
         const interval = 9;
         const count = 1000;
