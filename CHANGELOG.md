@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
-## 4.1.0 - Unreleased
+## 4.1.0 - 2026-10-29
 ### Changed
 - Wait with `setTimeout` until about 1 ms before a queued call is allowed, then `setImmediate`, instead of nanotimer,
   which busy-waited for the last 25 ms of every wait. A queued call still runs at most about 1 ms after it is allowed.
