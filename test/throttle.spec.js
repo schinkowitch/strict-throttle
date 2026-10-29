@@ -371,4 +371,108 @@ describe('Strict throttle', () => {
 
         throttle.waitingCount().should.equal(0);
     });
+
+    it('keeps FIFO order when waits are only microseconds', async () => {
+        // The first two calls run immediately, microseconds apart, so after the third runs the
+        // fourth has only microseconds left to wait, and so on.
+        const rounds = 200;
+        const calls = 8;
+
+        for (let round = 0; round < rounds; round++) {
+            const throttle = Throttle({limit: 2, interval: 1});
+            const order = [];
+            const promises = [];
+
+            for (let i = 0; i < calls; i++) {
+                promises.push(throttle(() => order.push(i)));
+            }
+
+            await Promise.all(promises);
+
+            order.should.eql([...Array(calls).keys()], `round ${round}`);
+        }
+    });
+
+    it('does not busy-wait', async () => {
+        const interval = 200;
+        const throttle = Throttle({limit: 1, interval: interval});
+
+        await throttle(() => {});
+
+        const before = performance.eventLoopUtilization();
+        const start = performance.now();
+
+        await throttle(() => {});
+
+        const elapsed = performance.now() - start;
+        const elu = performance.eventLoopUtilization(before).utilization;
+
+        elapsed.should.be.within(interval - 1, interval + 10);
+        elu.should.be.below(0.1);
+    });
+
+    it('never lets limit + 1 calls start within the interval', async () => {
+        const limit = 5;
+        const interval = 20;
+        const count = 300;
+        const throttle = Throttle({limit: limit, interval: interval});
+        const busy = ms => {
+            const end = performance.now() + ms;
+            while (performance.now() < end) {}
+        };
+        const promises = [];
+        const ends = [performance.now()];
+
+        for (let i = 0; i < count; i++) {
+            if (Math.random() < 0.1) {
+                await setTimeout(Math.floor(Math.random() * 5));
+            }
+            busy(Math.random() * 0.5);
+            promises.push(throttle(() => {
+                const start = performance.now();
+                busy(Math.random() * 3);
+                ends.push(performance.now());
+                return start;
+            }));
+        }
+
+        const starts = await Promise.all(promises);
+
+        // The throttle records call i's start after call i - 1 has returned (ends[i]) and before fn
+        // reads starts[i], so this holds however long the process is paused between the two reads.
+        for (let i = limit; i < starts.length; i++) {
+            (starts[i] - ends[i - limit]).should.be.aboveOrEqual(interval, `call ${i}`);
+        }
+    });
+
+    it('expires a large window quickly', async () => {
+        const limit = 100000;
+        const interval = 1000;
+        const now = performance.now;
+        let fakeNow = now.call(performance);
+
+        performance.now = () => fakeNow;
+
+        try {
+            const throttle = Throttle({limit: limit, interval: interval});
+            const promises = [];
+
+            for (let i = 0; i < limit; i++) {
+                promises.push(throttle(() => {}));
+            }
+
+            await Promise.all(promises);
+
+            fakeNow += interval;
+
+            const start = process.hrtime.bigint();
+
+            await throttle(() => {});
+
+            Number(process.hrtime.bigint() - start).should.be.below(50e6); // 50 ms
+            throttle.waitingCount().should.equal(0);
+        } finally {
+            performance.now = now;
+        }
+    });
 });

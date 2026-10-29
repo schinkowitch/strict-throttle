@@ -1,6 +1,6 @@
 {
   "name": "strict-throttle",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "Strictly throttle function calls",
   "repository": {
     "type": "git",
@@ -31,8 +31,5 @@
   "license": "MIT",
   "devDependencies": {
     "should": "^13.2.3"
-  },
-  "dependencies": {
-    "nanotimer": "^0.3.15"
   }
 }

@@ -41,6 +41,13 @@ example();
 Similar libraries often use a windowed algorithm, allowing *limit* executions per *interval*. This is sufficient for 
 most use cases, but may result in the overuse of the limited resource when bursts are encountered.
 
+### Timing
+
+A queued call runs at most about 1 ms after the window allows it, and never before. The throttle sleeps with
+`setTimeout` until about 1 ms before a call is allowed and covers the rest with `setImmediate`, re-checking the time
+(`performance.now()`) on every wake-up, so it doesn't busy-wait. A call can run later than that if the event loop is
+blocked, or if the operating system wakes the process late.
+
 ## API
 
 ### StrictThrottle(options) 

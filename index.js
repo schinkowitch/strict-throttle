@@ -1,31 +1,34 @@
 'use strict';
 
-const NanoTimer = require('nanotimer');
-const timer = new NanoTimer();
+const {performance} = require('node:perf_hooks');
+
+// Waits of at least this many ms sleep with setTimeout until about 1 ms before the deadline; shorter
+// waits, and the rest of a long one, are covered by setImmediate, re-checking the clock on each wake-up.
+const IMMEDIATE_THRESHOLD_MS = 2;
 
 module.exports = function StrictThrottle ({limit, interval}) {
     checkOptions(limit, interval);
 
-    const intervalNanos = BigInt(interval * 1000000);
-    const recentTicks = new Array(limit).fill(0n);
-    let oldestIndex = limit - 1;
+    const starts = []; // performance.now() of recent executions, oldest first; those before `head` have expired
+    let head = 0;
     const queue = [];
-    let timerId = null;
+    let timeout = null;
+    let immediate = null;
 
     function throttle (fn) {
         if (typeof fn !== 'function') {
             throw new Error('Expected `fn` to be a function');
         }
 
-        if (shouldExecuteImmediately()) {
-            return executeImmediately(fn);
+        if (queue.length === 0 && remainingWait(performance.now()) === 0) {
+            return execute(fn);
         }
 
         return new Promise((resolve, reject) => {
             queue.push({fn, resolve, reject});
 
-            if (queue.length === 1) {
-                scheduleNext(process.hrtime.bigint());
+            if (timeout === null && immediate === null) {
+                schedule(remainingWait(performance.now()));
             }
         });
     }
@@ -35,17 +38,29 @@ module.exports = function StrictThrottle ({limit, interval}) {
 
     return throttle;
 
-    function shouldExecuteImmediately () {
-        if (queue.length > 0) {
-            return false;
+    // Milliseconds until another execution is allowed, or 0 if one is allowed now
+    function remainingWait (now) {
+        while (head < starts.length && now - starts[head] >= interval) {
+            head++;
         }
 
-        return process.hrtime.bigint() - recentTicks[oldestIndex] >= intervalNanos;
+        // Drop expired entries once they are at least half the array, so each start is copied O(1) times on
+        // average (shift() copies the whole array when it is large)
+        if (head > 0 && head * 2 >= starts.length) {
+            starts.splice(0, head);
+            head = 0;
+        }
+
+        if (starts.length - head < limit) {
+            return 0;
+        }
+
+        return interval - (now - starts[head]);
     }
 
-    function executeImmediately (fn) {
+    function execute (fn) {
         return new Promise((resolve, reject) => {
-            recordExecution(process.hrtime.bigint());
+            starts.push(performance.now());
 
             try {
                 resolve(fn());
@@ -55,38 +70,43 @@ module.exports = function StrictThrottle ({limit, interval}) {
         });
     }
 
-    function executeFirst () {
-        const firstEntry = queue.shift();
-        const now = process.hrtime.bigint();
+    // Queued entries only ever run from here, in a timer or immediate callback, never synchronously
+    // inside throttle() or schedule(), so they always run in FIFO order.
+    function onWake () {
+        timeout = null;
+        immediate = null;
 
-        recordExecution(now);
+        if (queue.length === 0) {
+            return;
+        }
+
+        const wait = remainingWait(performance.now());
+
+        if (wait > 0) {
+            schedule(wait); // Too early: setTimeout can fire before its delay in real time
+            return;
+        }
+
+        const entry = queue.shift();
+
+        starts.push(performance.now());
 
         if (queue.length > 0) {
-            scheduleNext(now);
+            schedule(remainingWait(performance.now()));
         }
 
         try {
-            firstEntry.resolve(firstEntry.fn());
+            entry.resolve(entry.fn());
         } catch (err) {
-            firstEntry.reject(err);
+            entry.reject(err);
         }
     }
 
-    function recordExecution (now) {
-        recentTicks[oldestIndex--] = now;
-
-        if (oldestIndex < 0) {
-            oldestIndex = limit - 1;
-        }
-    }
-
-    function scheduleNext (now) {
-        const elapsed = now - recentTicks[oldestIndex];
-
-        if (elapsed >= intervalNanos) {
-            setImmediate(executeFirst);
+    function schedule (wait) {
+        if (wait >= IMMEDIATE_THRESHOLD_MS) {
+            timeout = setTimeout(onWake, Math.floor(wait) - 1);
         } else {
-            timerId = timer.setTimeout(executeFirst, '', (intervalNanos - elapsed) + 'n');
+            immediate = setImmediate(onWake);
         }
     }
 
@@ -99,8 +119,11 @@ module.exports = function StrictThrottle ({limit, interval}) {
             return;
         }
 
-        timer.clearTimeout(timerId); // Remove scheduled execution of next queue member
-        timerId = null;
+        // Remove scheduled execution of next queue member
+        clearTimeout(timeout);
+        clearImmediate(immediate);
+        timeout = null;
+        immediate = null;
 
         for (const entry of queue) {
             entry.reject(new Error('Aborted'));

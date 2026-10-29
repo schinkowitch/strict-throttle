@@ -24,7 +24,8 @@ declare namespace StrictThrottle {
         abort(): void;
 
         /**
-         Throttle execution of the supplied function.
+         Throttle execution of the supplied function. A queued call runs at most about 1 ms after the window allows
+         it, and never before.
 
          @param fn - Promise-returning/async function.
          @returns The promise returned by calling fn()
